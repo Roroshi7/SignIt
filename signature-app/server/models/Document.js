@@ -53,9 +53,6 @@ const DocumentSchema = new mongoose.Schema({
   }
 });
 
-// Index for faster token lookups
-DocumentSchema.index({ shareToken: 1 });
-
 // Clean up files when document is deleted
 DocumentSchema.pre('remove', async function(next) {
   try {

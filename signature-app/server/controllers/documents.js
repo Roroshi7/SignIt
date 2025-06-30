@@ -319,7 +319,7 @@ exports.deleteDocument = async (req, res) => {
       const signedFilePath = path.join(uploadDir, path.basename(document.signedFilePath));
       if (fs.existsSync(signedFilePath)) {
         fs.unlinkSync(signedFilePath);
-      }
+    }
     }
     
     await document.deleteOne();

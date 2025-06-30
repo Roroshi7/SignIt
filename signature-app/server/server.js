@@ -35,8 +35,6 @@ const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/document-si
 console.log('Connecting to MongoDB:', mongoUri);
 
 mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
   socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
 }).then(() => {

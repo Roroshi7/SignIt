@@ -101,7 +101,7 @@ const Dashboard = () => {
         onDrop={handleDrop}
         onDragOver={e => e.preventDefault()}
       >
-        <img src="/upload-illustration.svg" alt="Upload" className="w-24 h-24 mb-4 opacity-80" />
+        <img src="/Upload.png" alt="Upload" className="w-24 h-24 mb-4 opacity-80" />
         <h2 className="text-2xl font-semibold mb-2">Upload your PDF</h2>
         <p className="text-gray-500 mb-4">Drag & drop or click to select a PDF file</p>
         <input
