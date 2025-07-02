@@ -164,6 +164,25 @@ const ExternalSign = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-2">Document Rejected</h2>
           <p className="text-gray-600">You have rejected the document for signing.</p>
+          {document && document.rejectionReason && (
+            <div className="mt-4 p-4 bg-red-100 text-red-800 rounded">
+              <strong>Rejection Reason:</strong> {document.rejectionReason}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (document && document.status === 'rejected' && document.rejectionReason) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Document Rejected</h2>
+          <p className="text-gray-600">This document was rejected for signing.</p>
+          <div className="mt-4 p-4 bg-red-100 text-red-800 rounded">
+            <strong>Rejection Reason:</strong> {document.rejectionReason}
+          </div>
         </div>
       </div>
     );

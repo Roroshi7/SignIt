@@ -18,6 +18,9 @@ const Dashboard = () => {
   const fileInputRef = useRef();
   const [pdfErrors, setPdfErrors] = useState({});
   const [statusFilter, setStatusFilter] = useState('All');
+  const [shareDocId, setShareDocId] = useState(null);
+  const [shareEmail, setShareEmail] = useState('');
+  const [shareLoading, setShareLoading] = useState(false);
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -93,6 +96,27 @@ const Dashboard = () => {
     }
   };
 
+  const handleShare = (docId) => {
+    setShareDocId(docId);
+  };
+
+  const handleShareSubmit = async () => {
+    setShareLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${backendUrl}/api/documents/${shareDocId}/share`, { email: shareEmail }, {
+        headers: { 'x-auth-token': token }
+      });
+      alert('Document shared successfully!');
+      setShareDocId(null);
+      setShareEmail('');
+    } catch (err) {
+      alert('Failed to share document.');
+      console.error(err);
+    }
+    setShareLoading(false);
+  };
+
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
       {/* Filter Dropdown */}
@@ -145,7 +169,11 @@ const Dashboard = () => {
           .map((doc) => (
             <div key={doc._id} className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center relative group border hover:shadow-xl transition">
               <div className="w-full flex justify-between items-center mb-2">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[doc.status] || 'bg-gray-100 text-gray-700'}`}>{doc.status}</span>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[doc.status] || 'bg-gray-100 text-gray-700'}`}>{doc.status}
+                  {doc.status === 'rejected' && doc.rejectionReason && (
+                    <span className="ml-2 text-red-600 text-xs">({doc.rejectionReason})</span>
+                  )}
+                </span>
                 {doc.signedFilePath && (
                   <a
                     href={`${backendUrl}/${doc.signedFilePath}`}
@@ -178,7 +206,10 @@ const Dashboard = () => {
                 <Link to={`/document/${doc._id}`} className="inline-flex items-center gap-1 px-3 py-1 text-xs text-indigo-700 bg-indigo-100 rounded hover:bg-indigo-200">
                   <EyeIcon className="w-4 h-4" /> View
                 </Link>
-                <button className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-700 bg-blue-100 rounded hover:bg-blue-200">
+                <button
+                  className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-700 bg-blue-100 rounded hover:bg-blue-200"
+                  onClick={() => handleShare(doc._id)}
+                >
                   <ShareIcon className="w-4 h-4" /> Share
                 </button>
                 <button onClick={() => handleDelete(doc._id)} className="inline-flex items-center gap-1 px-3 py-1 text-xs text-red-700 bg-red-100 rounded hover:bg-red-200">
@@ -188,6 +219,36 @@ const Dashboard = () => {
             </div>
           ))}
       </div>
+
+      {shareDocId && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-lg font-bold mb-2">Share Document</h2>
+            <input
+              type="email"
+              placeholder="Recipient's email"
+              value={shareEmail}
+              onChange={e => setShareEmail(e.target.value)}
+              className="border px-3 py-2 rounded w-full mb-4"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleShareSubmit}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+                disabled={shareLoading}
+              >
+                {shareLoading ? 'Sharing...' : 'Share'}
+              </button>
+              <button
+                onClick={() => setShareDocId(null)}
+                className="bg-gray-300 px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

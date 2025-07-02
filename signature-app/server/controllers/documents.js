@@ -363,6 +363,7 @@ exports.getExternalDocument = async (req, res) => {
       fileName: document.fileName,
       filePath: document.filePath,
       status: document.status,
+      rejectionReason: document.rejectionReason,
     });
   } catch (err) {
     console.error('Error in getExternalDocument:', err);
