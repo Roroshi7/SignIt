@@ -22,6 +22,7 @@ const ExternalSign = () => {
   const signatureRef = React.useRef(null);
   const [moveableTarget, setMoveableTarget] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [rejected, setRejected] = useState(false);
 
   const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -121,6 +122,20 @@ const ExternalSign = () => {
     setFinalizing(false);
   };
 
+  const handleReject = async () => {
+    const reason = prompt("Please provide a reason for rejection (optional):");
+    setFinalizing(true);
+    try {
+      await axios.post(`${backendUrl}/api/documents/external/${token}/reject`, { reason });
+      setRejected(true);
+      setError('');
+    } catch (err) {
+      setError('Failed to reject document. Please try again.');
+      console.error(err);
+    }
+    setFinalizing(false);
+  };
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -138,6 +153,17 @@ const ExternalSign = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-green-600 mb-2">✓ Document Signed!</h2>
           <p className="text-gray-600">Thank you for signing the document.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (rejected) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Document Rejected</h2>
+          <p className="text-gray-600">You have rejected the document for signing.</p>
         </div>
       </div>
     );
@@ -177,6 +203,13 @@ const ExternalSign = () => {
             {finalizing ? 'Finalizing...' : 'Sign Document'}
           </button>
         )}
+        <button
+          className="flex items-center gap-2 px-5 py-2 rounded-lg bg-red-600 text-white font-semibold shadow hover:bg-red-700 transition"
+          onClick={handleReject}
+          disabled={finalizing}
+        >
+          Reject
+        </button>
       </div>
 
       {/* PDF Preview */}

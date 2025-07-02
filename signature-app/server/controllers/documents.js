@@ -266,13 +266,14 @@ exports.rejectDocumentByToken = async (req, res) => {
     const document = await Document.findOne({ shareToken: req.params.token });
     if (!document) return res.status(404).json({ msg: 'Document not found' });
     document.externalSignerStatus = 'rejected';
+    document.status = 'rejected';
     document.rejectionReason = reason;
     await document.save();
 
     await logAudit({
       documentId: document._id,
       action: 'reject',
-      user: req.user.id,
+      user: document.sharedWith || 'external',
       ip: req.ip,
       details: { reason },
     });
@@ -437,6 +438,36 @@ exports.signExternalDocument = async (req, res) => {
       action: 'signed',
       details: `Document signed by ${document.sharedWith || 'external signer'}`
     });
+
+    // Send email to recipient with signed document link
+    if (document.sharedWith && document.signedFilePath) {
+      try {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          }
+        });
+        const backendUrl = process.env.BACKEND_URL ? process.env.BACKEND_URL.replace(/\/$/, '') : 'http://localhost:5000';
+        const downloadLink = `${backendUrl}/${document.signedFilePath}`;
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: document.sharedWith,
+          subject: 'Your Signed Document is Ready',
+          html: `
+            <h2>Your Document Has Been Signed</h2>
+            <p>The document <b>${document.fileName}</b> has been signed.</p>
+            <p>You can download the signed document here:</p>
+            <a href="${downloadLink}">Download Signed PDF</a>
+          `
+        };
+        await transporter.sendMail(mailOptions);
+        console.log('Signed document email sent to recipient.');
+      } catch (emailErr) {
+        console.error('Error sending signed document email:', emailErr);
+      }
+    }
 
     console.log('✅ Audit log created');
     console.log('✅ Document signed successfully:', document._id);

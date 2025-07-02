@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [file, setFile] = useState(null);
   const fileInputRef = useRef();
   const [pdfErrors, setPdfErrors] = useState({});
+  const [statusFilter, setStatusFilter] = useState('All');
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -94,6 +95,19 @@ const Dashboard = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
+      {/* Filter Dropdown */}
+      <div className="flex justify-end mb-6">
+        <select
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+          className="border rounded px-3 py-2"
+        >
+          <option value="All">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Signed">Signed</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </div>
       {/* Upload Card */}
       <div
         className="flex flex-col items-center justify-center bg-white rounded-2xl shadow-lg p-8 mb-10 border-2 border-dashed border-indigo-200 hover:border-indigo-400 transition cursor-pointer"
@@ -126,51 +140,53 @@ const Dashboard = () => {
 
       {/* Documents Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {documents.map((doc) => (
-          <div key={doc._id} className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center relative group border hover:shadow-xl transition">
-            <div className="w-full flex justify-between items-center mb-2">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[doc.status] || 'bg-gray-100 text-gray-700'}`}>{doc.status}</span>
-              {doc.signedFilePath && (
-                <a
-                  href={`${backendUrl}/${doc.signedFilePath}`}
-                  download
-                  className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-700 bg-green-100 rounded hover:bg-green-200"
-                  onClick={e => e.stopPropagation()}
-                  onMouseDown={e => e.stopPropagation()}
-                >
-                  <ArrowDownTrayIcon className="w-4 h-4" /> Download
-                </a>
-              )}
+        {documents
+          .filter(doc => statusFilter === 'All' || doc.status === statusFilter)
+          .map((doc) => (
+            <div key={doc._id} className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center relative group border hover:shadow-xl transition">
+              <div className="w-full flex justify-between items-center mb-2">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[doc.status] || 'bg-gray-100 text-gray-700'}`}>{doc.status}</span>
+                {doc.signedFilePath && (
+                  <a
+                    href={`${backendUrl}/${doc.signedFilePath}`}
+                    download
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-700 bg-green-100 rounded hover:bg-green-200"
+                    onClick={e => e.stopPropagation()}
+                    onMouseDown={e => e.stopPropagation()}
+                  >
+                    <ArrowDownTrayIcon className="w-4 h-4" /> Download
+                  </a>
+                )}
+              </div>
+              <div className="h-48 w-full flex items-center justify-center overflow-hidden rounded-lg border bg-gray-50 mb-3">
+                <Link to={`/document/${doc._id}`} className="w-full flex items-center justify-center">
+                  <Document
+                    file={`${backendUrl}/${doc.signedFilePath || doc.filePath}`}
+                    onLoadError={err => setPdfErrors(prev => ({ ...prev, [doc._id]: err.message }))}
+                    onSourceError={err => setPdfErrors(prev => ({ ...prev, [doc._id]: err.message }))}
+                  >
+                    {pdfErrors[doc._id] ? (
+                      <div className="text-red-500 text-xs text-center p-2">Failed to load PDF</div>
+                    ) : (
+                      <Page pageNumber={1} width={150} />
+                    )}
+                  </Document>
+                </Link>
+              </div>
+              <h3 className="text-lg font-semibold text-center mb-1 w-full truncate">{doc.fileName}</h3>
+              <div className="flex gap-2 mt-2">
+                <Link to={`/document/${doc._id}`} className="inline-flex items-center gap-1 px-3 py-1 text-xs text-indigo-700 bg-indigo-100 rounded hover:bg-indigo-200">
+                  <EyeIcon className="w-4 h-4" /> View
+                </Link>
+                <button className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-700 bg-blue-100 rounded hover:bg-blue-200">
+                  <ShareIcon className="w-4 h-4" /> Share
+                </button>
+                <button onClick={() => handleDelete(doc._id)} className="inline-flex items-center gap-1 px-3 py-1 text-xs text-red-700 bg-red-100 rounded hover:bg-red-200">
+                  <TrashIcon className="w-4 h-4" /> Delete
+                </button>
+              </div>
             </div>
-            <div className="h-48 w-full flex items-center justify-center overflow-hidden rounded-lg border bg-gray-50 mb-3">
-              <Link to={`/document/${doc._id}`} className="w-full flex items-center justify-center">
-                <Document
-                  file={`${backendUrl}/${doc.signedFilePath || doc.filePath}`}
-                  onLoadError={err => setPdfErrors(prev => ({ ...prev, [doc._id]: err.message }))}
-                  onSourceError={err => setPdfErrors(prev => ({ ...prev, [doc._id]: err.message }))}
-                >
-                  {pdfErrors[doc._id] ? (
-                    <div className="text-red-500 text-xs text-center p-2">Failed to load PDF</div>
-                  ) : (
-                    <Page pageNumber={1} width={150} />
-                  )}
-                </Document>
-              </Link>
-            </div>
-            <h3 className="text-lg font-semibold text-center mb-1 w-full truncate">{doc.fileName}</h3>
-            <div className="flex gap-2 mt-2">
-              <Link to={`/document/${doc._id}`} className="inline-flex items-center gap-1 px-3 py-1 text-xs text-indigo-700 bg-indigo-100 rounded hover:bg-indigo-200">
-                <EyeIcon className="w-4 h-4" /> View
-              </Link>
-              <button className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-700 bg-blue-100 rounded hover:bg-blue-200">
-                <ShareIcon className="w-4 h-4" /> Share
-              </button>
-              <button onClick={() => handleDelete(doc._id)} className="inline-flex items-center gap-1 px-3 py-1 text-xs text-red-700 bg-red-100 rounded hover:bg-red-200">
-                <TrashIcon className="w-4 h-4" /> Delete
-              </button>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
