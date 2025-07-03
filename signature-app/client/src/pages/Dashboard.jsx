@@ -165,7 +165,7 @@ const Dashboard = () => {
       {/* Documents Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {documents
-          .filter(doc => statusFilter === 'All' || doc.status === statusFilter)
+          .filter(doc => statusFilter === 'All' || doc.status === statusFilter.toLowerCase())
           .map((doc) => (
             <div key={doc._id} className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center relative group border hover:shadow-xl transition">
               <div className="w-full flex justify-between items-center mb-2">

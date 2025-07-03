@@ -41,7 +41,11 @@ exports.uploadDocument = async (req, res) => {
 
 exports.getDocuments = async (req, res) => {
   try {
-    const documents = await Document.find({ userId: req.user.id });
+    const filter = { userId: req.user.id };
+    if (req.query.status) {
+      filter.status = req.query.status;
+    }
+    const documents = await Document.find(filter);
     res.json(documents);
   } catch (err) {
     console.error(err);
