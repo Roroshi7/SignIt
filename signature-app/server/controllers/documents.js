@@ -25,10 +25,11 @@ exports.uploadDocument = async (req, res) => {
     await document.save();
 
     // Create audit log
-    await AuditLog.create({
+    await logAudit({
       documentId: document._id,
       action: 'upload',
-      userId: req.user.id,
+      user: req.user.id,
+      ip: req.ip,
       details: 'Document uploaded'
     });
 
@@ -161,10 +162,11 @@ exports.shareDocument = async (req, res) => {
     await document.save();
 
     // Create audit log
-    await AuditLog.create({
+    await logAudit({
       documentId: document._id,
       action: 'shared',
-      userId: req.user.id,
+      user: req.user.id,
+      ip: req.ip,
       details: `Document shared with ${email}`
     });
 
@@ -252,7 +254,7 @@ exports.signDocumentByToken = async (req, res) => {
     await logAudit({
       documentId: document._id,
       action: 'sign',
-      user: req.user.id,
+      user: document.sharedWith || 'external signer',
       ip: req.ip,
       details: { fileName: document.fileName },
     });
@@ -291,10 +293,12 @@ exports.rejectDocumentByToken = async (req, res) => {
 
 exports.getAuditLogs = async (req, res) => {
   try {
+    console.log('Fetching audit logs for document:', req.params.docId);
     const logs = await AuditLog.find({ documentId: req.params.docId }).sort({ timestamp: -1 });
+    console.log('Found audit logs:', logs.length);
     res.json(logs);
   } catch (err) {
-    console.error(err.message);
+    console.error('Error fetching audit logs:', err.message);
     res.status(500).send('Server Error');
   }
 };
@@ -438,9 +442,11 @@ exports.signExternalDocument = async (req, res) => {
     console.log('✅ Document updated successfully');
 
     // Create audit log
-    await AuditLog.create({
+    await logAudit({
       documentId: document._id,
-      action: 'signed',
+      action: 'sign',
+      user: document.sharedWith || 'external signer',
+      ip: req.ip,
       details: `Document signed by ${document.sharedWith || 'external signer'}`
     });
 

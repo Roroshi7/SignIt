@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
-const { uploadDocument, getDocuments, getDocument, shareDocument, getExternalDocument, signExternalDocument, signDocument, deleteDocument, rejectDocumentByToken } = require('../controllers/documents');
+const { uploadDocument, getDocuments, getDocument, shareDocument, getExternalDocument, signExternalDocument, signDocument, deleteDocument, rejectDocumentByToken, getAuditLogs } = require('../controllers/documents');
 
 // Upload new document
 router.post('/upload', auth, upload.single('document'), uploadDocument);
@@ -30,6 +30,9 @@ router.post('/:id/share', auth, shareDocument);
 
 // Delete document
 router.delete('/:id', auth, deleteDocument);
+
+// Get audit logs for a document
+router.get('/:docId/audit-logs', auth, getAuditLogs);
 
 module.exports = router;
 

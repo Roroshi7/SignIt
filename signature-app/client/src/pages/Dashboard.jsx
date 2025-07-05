@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Document, Page } from 'react-pdf';
 import { Link } from 'react-router-dom';
-import { ArrowDownTrayIcon, EyeIcon, ShareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, EyeIcon, ShareIcon, TrashIcon, ClockIcon } from '@heroicons/react/24/outline';
+import AuditLogViewer from '../components/AuditLogViewer';
 
 const statusColors = {
   Pending: 'bg-yellow-100 text-yellow-800',
@@ -21,6 +22,8 @@ const Dashboard = () => {
   const [shareDocId, setShareDocId] = useState(null);
   const [shareEmail, setShareEmail] = useState('');
   const [shareLoading, setShareLoading] = useState(false);
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
+  const [selectedDocId, setSelectedDocId] = useState(null);
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -98,6 +101,11 @@ const Dashboard = () => {
 
   const handleShare = (docId) => {
     setShareDocId(docId);
+  };
+
+  const handleShowAuditLogs = (docId) => {
+    setSelectedDocId(docId);
+    setShowAuditLogs(true);
   };
 
   const handleShareSubmit = async () => {
@@ -212,6 +220,12 @@ const Dashboard = () => {
                 >
                   <ShareIcon className="w-4 h-4" /> Share
                 </button>
+                <button
+                  className="inline-flex items-center gap-1 px-3 py-1 text-xs text-purple-700 bg-purple-100 rounded hover:bg-purple-200"
+                  onClick={() => handleShowAuditLogs(doc._id)}
+                >
+                  <ClockIcon className="w-4 h-4" /> Audit
+                </button>
                 <button onClick={() => handleDelete(doc._id)} className="inline-flex items-center gap-1 px-3 py-1 text-xs text-red-700 bg-red-100 rounded hover:bg-red-200">
                   <TrashIcon className="w-4 h-4" /> Delete
                 </button>
@@ -248,6 +262,16 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {showAuditLogs && selectedDocId && (
+        <AuditLogViewer
+          documentId={selectedDocId}
+          onClose={() => {
+            setShowAuditLogs(false);
+            setSelectedDocId(null);
+          }}
+        />
       )}
     </div>
   );
