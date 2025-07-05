@@ -32,7 +32,7 @@ exports.uploadDocument = async (req, res) => {
     const document = new Document({
       userId: req.user.id,
       fileName: req.file.originalname,
-      filePath: req.file.path
+      filePath: `uploads/${path.basename(req.file.path)}`
     });
 
     console.log('Saving document to database...');
@@ -453,7 +453,7 @@ exports.signExternalDocument = async (req, res) => {
 
     // Update document status and path
     document.status = 'signed';
-    document.signedFilePath = req.file.path;
+    document.signedFilePath = `uploads/${path.basename(req.file.path)}`;
     document.signatureMeta = signatureMeta;
     await document.save();
 

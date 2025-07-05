@@ -54,14 +54,23 @@ const DocumentSchema = new mongoose.Schema({
 });
 
 // Clean up files when document is deleted
-DocumentSchema.pre('remove', async function(next) {
+DocumentSchema.pre('deleteOne', { document: true, query: false }, async function(next) {
   try {
-    const fs = require('fs').promises;
+    const fs = require('fs');
+    const path = require('path');
+    const uploadDir = path.join(__dirname, '../uploads');
+    
     if (this.filePath) {
-      await fs.unlink(this.filePath);
+      const filePath = path.join(uploadDir, path.basename(this.filePath));
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
     }
     if (this.signedFilePath) {
-      await fs.unlink(this.signedFilePath);
+      const signedFilePath = path.join(uploadDir, path.basename(this.signedFilePath));
+      if (fs.existsSync(signedFilePath)) {
+        fs.unlinkSync(signedFilePath);
+      }
     }
   } catch (err) {
     console.error('Error deleting document files:', err);
