@@ -24,7 +24,7 @@ const ExternalSign = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [rejected, setRejected] = useState(false);
 
-  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const backendUrl = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://signit-t0js.onrender.com');
 
   useEffect(() => {
     const fetchDocument = async () => {

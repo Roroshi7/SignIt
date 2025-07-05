@@ -7,7 +7,7 @@ const ShareModal = ({ open, onClose, documentId }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const backendUrl = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://signit-t0js.onrender.com');
 
   const handleShare = async (e) => {
     e.preventDefault();

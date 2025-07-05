@@ -9,7 +9,7 @@ import { PencilSquareIcon, ShareIcon, ArrowDownTrayIcon } from '@heroicons/react
 import Moveable from 'react-moveable';
 
 // Get backend URL from environment variable
-const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const backendUrl = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://signit-t0js.onrender.com');
 
 const DocumentViewer = () => {
   const { id } = useParams();
