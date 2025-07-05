@@ -19,6 +19,9 @@ router.post('/external/:token/sign', upload.single('signedPdf'), signExternalDoc
 // Add reject route for external signers
 router.post('/external/:token/reject', rejectDocumentByToken);
 
+// Get audit logs for a document (must come before /:id routes)
+router.get('/:docId/audit-logs', auth, getAuditLogs);
+
 // Get single document
 router.get('/:id', auth, getDocument);
 
@@ -30,9 +33,6 @@ router.post('/:id/share', auth, shareDocument);
 
 // Delete document
 router.delete('/:id', auth, deleteDocument);
-
-// Get audit logs for a document
-router.get('/:docId/audit-logs', auth, getAuditLogs);
 
 module.exports = router;
 

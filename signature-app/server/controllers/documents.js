@@ -12,9 +12,22 @@ async function logAudit({ documentId, action, user, ip, details }) {
 
 exports.uploadDocument = async (req, res) => {
   try {
+    console.log('Upload request received:', {
+      file: req.file ? 'File present' : 'No file',
+      user: req.user.id,
+      body: req.body
+    });
+
     if (!req.file) {
       return res.status(400).json({ msg: 'No file uploaded' });
     }
+
+    console.log('File details:', {
+      originalname: req.file.originalname,
+      path: req.file.path,
+      size: req.file.size,
+      mimetype: req.file.mimetype
+    });
 
     const document = new Document({
       userId: req.user.id,
@@ -22,9 +35,12 @@ exports.uploadDocument = async (req, res) => {
       filePath: req.file.path
     });
 
+    console.log('Saving document to database...');
     await document.save();
+    console.log('Document saved successfully:', document._id);
 
     // Create audit log
+    console.log('Creating audit log...');
     await logAudit({
       documentId: document._id,
       action: 'upload',
@@ -32,11 +48,13 @@ exports.uploadDocument = async (req, res) => {
       ip: req.ip,
       details: 'Document uploaded'
     });
+    console.log('Audit log created successfully');
 
     res.json(document);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: 'Server error' });
+    console.error('Upload error:', err);
+    console.error('Error stack:', err.stack);
+    res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
 
